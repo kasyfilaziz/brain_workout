@@ -3,6 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/flashcard/',
   plugins: [
     svelte(),
     VitePWA({
@@ -16,7 +17,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        start_url: '/flashcard/',
+        scope: '/flashcard/',
         icons: [
           {
             src: 'icons/icon-192.png',
