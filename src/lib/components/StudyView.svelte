@@ -11,6 +11,7 @@
   let currentIndex = 0;
   let isFlipped = false;
   let sessionFinished = false;
+  let isTransitioning = false;
 
   $: {
     const now = Date.now();
@@ -18,25 +19,34 @@
   }
 
   function handleRating(rating) {
-    // Vibrate feedback (mobile)
+    if (isTransitioning) return;
+
     if (typeof window !== 'undefined' && window.navigator.vibrate) {
       if (rating < 3) {
-        window.navigator.vibrate([100, 50, 100]); // Two pulses for difficult
+        window.navigator.vibrate([100, 50, 100]);
       } else {
-        window.navigator.vibrate(50); // One short pulse for success
+        window.navigator.vibrate(50);
       }
     }
+
+    isTransitioning = true;
 
     const currentCard = sessionCards[currentIndex];
     const updatedCard = calculateSM2(currentCard, rating);
     updateCard(updatedCard);
 
-    if (currentIndex < sessionCards.length - 1) {
-      isFlipped = false;
-      currentIndex++;
-    } else {
-      sessionFinished = true;
-    }
+    setTimeout(() => {
+      if (currentIndex < sessionCards.length - 1) {
+        isFlipped = false;
+        setTimeout(() => {
+          currentIndex++;
+          isTransitioning = false;
+        }, 500);
+      } else {
+        sessionFinished = true;
+        isTransitioning = false;
+      }
+    }, 400);
   }
 
   function finish() {
@@ -79,23 +89,26 @@
       </button>
     </div>
   {:else if sessionCards.length > 0}
-    <div class="flex-1 flex flex-col items-center justify-center py-4">
+    <div class="flex-1 flex flex-col items-center justify-center py-4 {isTransitioning ? 'opacity-50 scale-95 transition-all duration-300' : ''}">
       <FlashCard card={sessionCards[currentIndex]} bind:isFlipped />
     </div>
 
     {#if isFlipped}
-      <div class="grid grid-cols-5 gap-2 animate-slide-up pb-4 px-1">
+      <div class="grid grid-cols-5 gap-2 animate-slide-up pb-4 px-1 {isTransitioning ? 'opacity-50 scale-95 transition-all duration-300' : ''}">
         {#each [1, 2, 3, 4, 5] as rating}
           <button 
             on:click={() => handleRating(rating)}
-            class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-800 hover:border-blue-500 active:scale-90 transition-all group"
+            disabled={isTransitioning}
+            class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-800 hover:border-blue-500 active:scale-90 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span class="text-lg font-black group-hover:text-blue-500">{rating}</span>
             <span class="text-[8px] font-bold uppercase tracking-tighter text-gray-400">Rating</span>
           </button>
         {/each}
       </div>
-      <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest animate-fade-in pb-4">Seberapa hafal kamu?</p>
+      {#if !isTransitioning}
+        <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest animate-fade-in pb-4">Seberapa hafal kamu?</p>
+      {/if}
     {:else}
       <div class="text-center pb-20">
         <p class="text-gray-400 text-sm font-medium animate-pulse">Klik kartu untuk melihat jawaban</p>
