@@ -35,18 +35,19 @@
     const updatedCard = calculateSM2(currentCard, rating);
     updateCard(updatedCard);
 
+    // Flip back the card first
+    isFlipped = false;
+
+    // Wait for flip animation to finish (1000ms = 1 detik)
+    // Only then change to the next card
     setTimeout(() => {
       if (currentIndex < sessionCards.length - 1) {
-        isFlipped = false;
-        setTimeout(() => {
-          currentIndex++;
-          isTransitioning = false;
-        }, 500);
+        currentIndex++;
       } else {
         sessionFinished = true;
-        isTransitioning = false;
       }
-    }, 400);
+      isTransitioning = false;
+    }, 1000);
   }
 
   function finish() {
@@ -89,11 +90,27 @@
       </button>
     </div>
   {:else if sessionCards.length > 0}
-    <div class="flex-1 flex flex-col items-center justify-center py-4 {isTransitioning ? 'opacity-50 scale-95 transition-all duration-300' : ''}">
-      <FlashCard card={sessionCards[currentIndex]} bind:isFlipped />
-    </div>
+    {#if isTransitioning}
+      <div class="flex-1 flex flex-col items-center justify-center py-4">
+        <div class="text-center space-y-4 animate-fade-in">
+          <div class="relative">
+            <div class="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Menyimpan...</p>
+        </div>
+      </div>
+    {:else}
+      <div class="flex-1 flex flex-col items-center justify-center py-4">
+        <FlashCard card={sessionCards[currentIndex]} bind:isFlipped />
+      </div>
+    {/if}
 
-    {#if isFlipped}
+    {#if isFlipped && !isTransitioning}
       <div class="grid grid-cols-5 gap-2 animate-slide-up pb-4 px-1 {isTransitioning ? 'opacity-50 scale-95 transition-all duration-300' : ''}">
         {#each [1, 2, 3, 4, 5] as rating}
           <button 
