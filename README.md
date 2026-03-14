@@ -116,14 +116,14 @@ Berikut adalah breakdown tugas untuk pengembangan fitur lanjutan yang direncanak
 
 ### 2. Manajemen Data Tingkat Lanjut
 - [x] Fitur **Import JSON** untuk restorasi backup penuh (saat ini baru CSV).
-- [ ] Validasi data import yang lebih ketat dengan feedback error yang jelas.
+- [x] Validasi data import yang lebih ketat dengan feedback error yang jelas.
 - [ ] Fitur "Merge Decks" (Menggabungkan dua deck menjadi satu).
-- [ ] Opsi untuk menghapus semua data (Reset App).
+- [x] Opsi untuk menghapus semua data (Reset App).
 
 ### 3. Kustomisasi Sesi Belajar
 - [ ] Pengaturan limit harian: "Max New Cards" per hari per deck.
 - [ ] Pengaturan limit harian: "Max Review Cards" per hari per deck.
-- [ ] Fitur "Quick Study" (Latihan cepat dari semua deck sekaligus).
+- [x] Fitur "Quick Study" (Latihan cepat dari semua deck sekaligus).
 - [ ] Timer opsional saat menjawab kartu.
 
 ### 4. Navigasi & Organisasi
@@ -134,7 +134,7 @@ Berikut adalah breakdown tugas untuk pengembangan fitur lanjutan yang direncanak
 
 ### 5. Robustness & Persistence
 - [x] Pastikan tema (Dark/Light) tersimpan di IndexedDB (selain localStorage).
-- [ ] Restore "Last Session State": Kembali ke view/deck terakhir saat app dibuka.
+- [x] Restore "Last Session State": Kembali ke view/deck terakhir saat app dibuka.
 - [ ] Optimasi performa untuk database dengan ribuan kartu.
 
 ## Cara Penggunaan
