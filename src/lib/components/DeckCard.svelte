@@ -7,7 +7,7 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow active:scale-95 duration-200 group">
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm group-hover:shadow-md transition-shadow duration-200 group">
   <div class="flex justify-between items-start mb-3">
     <h3 class="font-bold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{deck.name}</h3>
     <button on:click|stopPropagation={() => dispatch('delete', deck.id)} class="text-gray-300 hover:text-red-500 p-1">
@@ -26,12 +26,5 @@
         <p class="text-green-500">Semua kartu sudah dipelajari</p>
       {/if}
     </div>
-    
-    <button 
-      on:click={() => dispatch('study', deck.id)}
-      class="bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 active:translate-y-0.5 transition-all"
-    >
-      Mulai
-    </button>
   </div>
 </div>

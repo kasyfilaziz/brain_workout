@@ -92,17 +92,22 @@
   {:else}
     <div class="grid grid-cols-1 gap-4">
       {#each $decks as deck (deck.id)}
-        <div class="relative group">
+        <div 
+          class="relative group cursor-pointer active:scale-95 transition-transform duration-200"
+          on:click={() => dispatch('study', deck.id)}
+          role="button"
+          tabindex="0"
+          on:keydown={(e) => e.key === 'Enter' && dispatch('study', deck.id)}
+        >
           <DeckCard 
             {deck} 
             totalCount={getTotalCount(deck.id)}
             dueCount={getDueCount(deck.id)}
-            on:study={() => dispatch('study', deck.id)}
             on:delete={(e) => { if(confirm('Hapus deck ini beserta semua isinya?')) deleteDeck(e.detail); }}
           />
           <button 
-            on:click={() => openAddCard(deck.id)}
-            class="absolute top-4 right-14 text-gray-300 hover:text-blue-500 p-1"
+            on:click|stopPropagation={() => openAddCard(deck.id)}
+            class="absolute top-4 right-14 text-gray-300 hover:text-blue-500 p-1 z-10"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
