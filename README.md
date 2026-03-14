@@ -103,6 +103,40 @@ npm run preview
 - [x] Custom Install Prompt (A2HS)
 - [x] Animasi transisi antar halaman
 
+## Rencana Pengembangan Selanjutnya (Phase 7)
+
+Berikut adalah breakdown tugas untuk pengembangan fitur lanjutan yang direncanakan:
+
+### 1. Visualisasi Data & Insight Belajar (Advanced Stats)
+- [ ] Integrasi library chart (misal: Chart.js atau LayerCake) untuk visualisasi.
+- [ ] Chart "Mastery Distribution" (Penyebaran tingkat kemahiran kartu).
+- [ ] Grafik "Activity Heatmap" atau "Learning Progress" mingguan.
+- [ ] Fitur "Study Streak" (Menghitung hari berturut-turut belajar).
+- [ ] Statistik "Retention Rate" (Persentase jawaban benar/salah).
+
+### 2. Manajemen Data Tingkat Lanjut
+- [ ] Fitur **Import JSON** untuk restorasi backup penuh (saat ini baru CSV).
+- [ ] Validasi data import yang lebih ketat dengan feedback error yang jelas.
+- [ ] Fitur "Merge Decks" (Menggabungkan dua deck menjadi satu).
+- [ ] Opsi untuk menghapus semua data (Reset App).
+
+### 3. Kustomisasi Sesi Belajar
+- [ ] Pengaturan limit harian: "Max New Cards" per hari per deck.
+- [ ] Pengaturan limit harian: "Max Review Cards" per hari per deck.
+- [ ] Fitur "Quick Study" (Latihan cepat dari semua deck sekaligus).
+- [ ] Timer opsional saat menjawab kartu.
+
+### 4. Navigasi & Organisasi
+- [ ] Fitur **Search Bar** di Dashboard untuk mencari deck.
+- [ ] Fitur **Search & Filter** di dalam deck untuk mencari kartu tertentu.
+- [ ] Fitur **Tagging** pada kartu untuk pengelompokan lebih fleksibel.
+- [ ] Sortir deck berdasarkan: Nama, Terakhir dipelajari, Jumlah kartu due.
+
+### 5. Robustness & Persistence
+- [ ] Pastikan tema (Dark/Light) tersimpan di IndexedDB (selain localStorage).
+- [ ] Restore "Last Session State": Kembali ke view/deck terakhir saat app dibuka.
+- [ ] Optimasi performa untuk database dengan ribuan kartu.
+
 ## Cara Penggunaan
 
 ### 1. Buat Deck
