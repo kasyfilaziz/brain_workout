@@ -1,7 +1,7 @@
 <script>
   import { decks, cards, resetAllData } from '../stores/flashcards';
-  import { settings } from '../stores/settings';
-  import { exportToJSON, exportToCSV } from '../utils/export';
+  import { settings } from '../../../lib/stores/settings';
+  import { exportToJSON, exportToCSV } from '../../../lib/utils/export';
 
   $: totalDecks = $decks.length;
   $: totalCards = $cards.length;

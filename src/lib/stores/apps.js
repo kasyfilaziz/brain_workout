@@ -5,7 +5,6 @@ function createAppsStore() {
   const { subscribe, set } = writable([]);
 
   async function loadApps() {
-    // Auto-discovery via Vite's glob import
     const appModules = import.meta.glob('../../apps/*/index.js');
     const loadedApps = [];
     const db = await dbPromise;
@@ -26,8 +25,15 @@ function createAppsStore() {
             await db.put('settings', { key: `${appDef.id}_version`, value: appDef.version });
           }
 
+          // Load component
+          let component = null;
+          if (appDef.componentLoader) {
+            component = appDef.componentLoader;
+          }
+
           loadedApps.push({
             ...appDef,
+            component: component
           });
         }
       } catch (e) {

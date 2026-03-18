@@ -1,7 +1,7 @@
 <script>
   import { cards, updateCard, loadCards } from '../stores/flashcards';
-  import { calculateSM2 } from '../utils/sm2';
-  import { settings } from '../stores/settings';
+  import { calculateSM2 } from '../../../lib/utils/sm2';
+  import { settings } from '../../../lib/stores/settings';
   import FlashCard from './FlashCard.svelte';
   import { createEventDispatcher } from 'svelte';
 

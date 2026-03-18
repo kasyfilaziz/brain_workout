@@ -10,6 +10,9 @@
 
   const { needRefresh, updateServiceWorker, offlineReady } = useRegisterSW();
 
+  // Store for loaded app components
+  let loadedComponents = {};
+
   onMount(async () => {
     await navigation.init();
     await apps.loadApps();
@@ -20,18 +23,45 @@
     needRefresh.set(false);
   }
 
+  $: currentApp = $apps.find(a => a.id === $navigation.currentAppId);
+  
+  async function getAppComponent(app) {
+    if (!app) return null;
+    if (loadedComponents[app.id]) return loadedComponents[app.id];
+    if (app.componentLoader) {
+      const mod = await app.componentLoader();
+      loadedComponents[app.id] = mod.default;
+      return mod.default;
+    }
+    return null;
+  }
+
   $: toastVisible = $offlineReady || $needRefresh;
 </script>
 
 <div class="flex-1 flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 min-h-screen">
   <header class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-30">
     <div class="flex items-center space-x-2">
-      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-        </svg>
-      </div>
-      <h1 class="text-xl font-black tracking-tighter">Brain Container</h1>
+      {#if $navigation.currentAppId}
+        <button on:click={() => navigation.navigateTo(null)} class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+      {:else}
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+          </svg>
+        </div>
+      {/if}
+      <h1 class="text-xl font-black tracking-tighter">
+        {#if currentApp}
+          {currentApp.name}
+        {:else}
+          Brain Workouts
+        {/if}
+      </h1>
     </div>
     
     <button 
@@ -51,46 +81,44 @@
     </button>
   </header>
 
-  <main class="flex-1 p-5 pb-24 max-w-[600px] mx-auto w-full">
+  <main class="flex-1 p-5 pb-8 max-w-[600px] mx-auto w-full">
     {#if !$navigation.currentAppId}
       <Hub />
-    {:else}
-      {#await $apps.find(a => a.id === $navigation.currentAppId)}
+    {:else if currentApp}
+      {#await getAppComponent(currentApp)}
         <LoadingSpinner />
-      {:then app}
-        {#if app}
-          <div class="flex justify-between items-center mb-4">
-            <button on:click={() => navigation.navigateTo(null)} class="text-blue-500 font-bold">← Back to Hub</button>
-            <h2 class="text-xl font-bold">{app.name}</h2>
-          </div>
-          <!-- TODO: Render app component -->
-          <p>App {app.id} loaded (Rendering not fully implemented)</p>
+      {:then Component}
+        {#if Component}
+          <svelte:component this={Component} />
         {:else}
-          <p>App not found</p>
+          <p>App component not found</p>
           <button on:click={() => navigation.navigateTo(null)} class="text-blue-500">Back to Hub</button>
         {/if}
       {:catch error}
-        <p>Error loading app: {error.message}</p>
-        <button on:click={() => navigation.navigateTo(null)} class="text-blue-500">Back to Hub</button>
+        <p class="text-red-500 text-center">Error loading app: {error.message}</p>
+        <button on:click={() => navigation.navigateTo(null)} class="text-blue-500 mt-4">Back to Hub</button>
       {/await}
+    {:else}
+      <p class="text-gray-500 text-center">App not found</p>
+      <button on:click={() => navigation.navigateTo(null)} class="text-blue-500 mt-4">Back to Hub</button>
     {/if}
   </main>
 
   {#if toastVisible}
-    <div class="fixed bottom-20 left-4 right-4 max-w-[568px] mx-auto bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-5 rounded-[2rem] shadow-2xl flex items-center justify-between z-50 animate-bounce">
+    <div class="fixed bottom-4 left-4 right-4 max-w-[568px] mx-auto bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-2xl shadow-2xl flex items-center justify-between z-50">
       <div class="flex items-center space-x-3">
         <div class="bg-blue-500 rounded-full h-2 w-2 animate-ping"></div>
-        <span class="text-xs font-black uppercase tracking-widest">
+        <span class="text-xs font-bold uppercase tracking-widest">
           {$offlineReady ? 'Offline Ready' : 'Update Available'}
         </span>
       </div>
       <div class="flex gap-2">
         {#if $needRefresh}
-          <button on:click={() => updateServiceWorker(true)} class="bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl">
+          <button on:click={() => updateServiceWorker(true)} class="bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl">
             Update
           </button>
         {/if}
-        <button on:click={closeToast} class="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border border-white/20 dark:border-black/10">
+        <button on:click={closeToast} class="text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-white/20 dark:border-black/10">
           Tutup
         </button>
       </div>

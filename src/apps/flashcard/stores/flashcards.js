@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { dbPromise } from '../utils/db';
+import { dbPromise } from '../../../lib/utils/db';
 
 export const decks = writable([]);
 export const cards = writable([]);

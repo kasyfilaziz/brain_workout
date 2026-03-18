@@ -1,11 +1,13 @@
+// Component loader - will be awaited when app is selected
+const componentLoader = () => import('./App.svelte');
+
 export default {
   id: 'flashcard',
   name: 'Flashcards',
   icon: 'cards',
   description: 'Spaced repetition flashcards',
   version: '1.0.0',
-  
-  // Registration: we'll handle component loading dynamically or via registry later
+  componentLoader,
   
   routes: {
     '': 'Dashboard',
@@ -15,6 +17,6 @@ export default {
 };
 
 export const migrate = async (oldVersion) => {
-  // Placeholder for future migration logic
   console.log(`Flashcard app migrating from ${oldVersion}`);
+  // Future: Add migration logic for schema changes
 };
