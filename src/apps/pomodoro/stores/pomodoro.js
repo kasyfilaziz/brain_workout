@@ -9,7 +9,7 @@ export const timerState = writable('idle');
 export const currentSession = writable(null);
 export const sessions = writable([]);
 export const settings = writable(null);
-export const completedWorkSessions = writable(0);
+export const dailyCount = writable(0);
 
 let timerInterval = null;
 let pauseTime = null;
@@ -18,6 +18,12 @@ let wakeLock = null;
 export async function initPomodoroStores() {
   await loadSettings();
   await loadSessions();
+  await refreshDailyCount();
+}
+
+export async function refreshDailyCount() {
+  const count = await loadCompletedWorkSessionsToday();
+  dailyCount.set(count);
 }
 
 export async function loadSettings() {
@@ -192,8 +198,6 @@ async function completeSession() {
   
   const session = get(currentSession);
   const state = get(timerState);
-  const completed = get(completedWorkSessions);
-  const currentSettings = get(settings);
   
   releaseWakeLock();
   
@@ -204,13 +208,12 @@ async function completeSession() {
   }
   
   if (state === 'work') {
-    completedWorkSessions.set(completed + 1);
     timerState.set('waiting_for_break');
     currentSession.set(null);
+    await refreshDailyCount();
   } else if (state === 'break') {
     timerState.set('idle');
     currentSession.set(null);
-    completedWorkSessions.set(0);
   }
 }
 

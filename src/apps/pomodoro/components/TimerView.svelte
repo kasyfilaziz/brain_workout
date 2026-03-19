@@ -3,7 +3,7 @@
   import { 
     timerState, 
     currentSession, 
-    completedWorkSessions,
+    dailyCount,
     settings,
     generateRandomSessionName,
     startSession,
@@ -11,21 +11,17 @@
     resumeSession,
     skipSession,
     getTimerDisplay,
-    getSessionDuration,
     loadCompletedWorkSessionsToday
   } from '../stores/pomodoro';
   import { playNotification } from '../utils/notifications';
   
   let sessionName = generateRandomSessionName();
-  let dailyCount = 0;
   let displayTime = '25:00';
-  let isRunning = false;
-  let isPaused = false;
   let showBreakOptions = false;
   
   $: state = $timerState;
   $: session = $currentSession;
-  $: completedToday = $completedWorkSessions;
+  $: completedToday = $dailyCount;
   $: currentSettings = $settings;
   
   $: if (state === 'waiting_for_break') {
@@ -33,12 +29,10 @@
   } else if (state === 'idle') {
     showBreakOptions = false;
     sessionName = generateRandomSessionName();
-    dailyCount = loadCompletedWorkSessionsToday();
   }
   
   $: if (session && session.remaining !== undefined) {
-    const totalSeconds = Math.ceil(session.remaining / 1000);
-    displayTime = getTimerDisplay(Math.max(0, totalSeconds));
+    displayTime = getTimerDisplay(Math.ceil(session.remaining / 1000));
   }
   
   $: if (state === 'idle') {
@@ -55,14 +49,15 @@
   }
   
   async function handleStart() {
+    console.log("Start button clicked, state:", state);
     if (state === 'idle') {
       await startSession(sessionName, 'work');
+      console.log("startSession called");
     } else if (state === 'waiting_for_break') {
-      const completed = $completedWorkSessions;
+      const completed = completedToday;
       const needed = currentSettings?.sessionsBeforeLongBreak || 4;
       const isLongBreak = completed >= needed;
       await startSession(sessionName, isLongBreak ? 'long_break' : 'short_break');
-      showBreakOptions = false;
     }
   }
   
@@ -76,17 +71,6 @@
   
   async function handleSkip() {
     await skipSession();
-    showBreakOptions = false;
-  }
-  
-  function handleComplete() {
-    if (currentSettings?.soundEnabled || currentSettings?.vibrationEnabled) {
-      playNotification(currentSettings?.soundEnabled, currentSettings?.vibrationEnabled);
-    }
-  }
-  
-  $: if (state === 'waiting_for_break' || state === 'idle') {
-    dailyCount = loadCompletedWorkSessionsToday();
   }
   
   onDestroy(() => {
@@ -94,7 +78,7 @@
   });
 </script>
 
-<div class="flex flex-col items-center justify-center min-h-[70vh] space-y-8">
+<div class="flex flex-col flex-grow w-full space-y-8">
   {#if state === 'idle'}
     <div class="text-center space-y-2">
       <label for="sessionName" class="block text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -111,7 +95,7 @@
     
     <div class="text-center">
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-        Today's Sessions: <span class="font-bold text-blue-600 dark:text-blue-400">{dailyCount}</span>
+        Today's Sessions: <span class="font-bold text-blue-600 dark:text-blue-400">{completedToday}</span>
       </p>
       <div class="text-7xl font-bold text-gray-900 dark:text-white tabular-nums">
         {displayTime}
@@ -120,7 +104,7 @@
     
     <button
       on:click={handleStart}
-      class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+      class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 mx-auto"
     >
       Start Focus
     </button>
@@ -150,7 +134,7 @@
       </p>
     </div>
     
-    <div class="flex gap-4">
+    <div class="flex gap-4 mx-auto">
       <button
         on:click={handlePause}
         class="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -181,7 +165,7 @@
     
     <button
       on:click={handleResume}
-      class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+      class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 mx-auto"
     >
       Resume
     </button>
