@@ -118,9 +118,9 @@ description: "Task list for modular app container implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T030 [P] [US4] Ensure theme store works when container switches between apps (FR-006)
-- [ ] T031 [US4] Add lastOpenedApp to navigation store for session persistence (FR-007)
-- [ ] T032 [US4] Load last opened app on container initialization (FR-007)
+- [x] T030 [P] [US4] Ensure theme store works when container switches between apps (FR-006)
+- [x] T031 [US4] Add lastOpenedApp to navigation store for session persistence (FR-007)
+- [x] T032 [US4] Load last opened app on container initialization (FR-007)
 
 **Checkpoint**: All user stories complete - theme and navigation persist across apps
 
@@ -130,11 +130,11 @@ description: "Task list for modular app container implementation"
 
 **Purpose**: Final improvements and edge case handling
 
-- [ ] T033 [P] Add empty state UI when no apps are registered (edge case)
-- [ ] T034 [P] Handle app loading errors gracefully with user-friendly message
-- [ ] T035 Verify PWA functionality still works with new container structure
-- [ ] T036 Run `npm run build` to ensure production build succeeds
-- [ ] T037 Update README.md if directory structure changed significantly
+- [x] T033 [P] Add empty state UI when no apps are registered (edge case)
+- [x] T034 [P] Handle app loading errors gracefully with user-friendly message
+- [x] T035 Verify PWA functionality still works with new container structure
+- [x] T036 Run `npm run build` to ensure production build succeeds
+- [x] T037 Update README.md if directory structure changed significantly
 
 ---
 
