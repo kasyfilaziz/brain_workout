@@ -10,6 +10,8 @@
   let importStatus = '';
   let importType = 'csv';
   let errorDetails = [];
+  let inputMode = 'file';
+  let csvText = '';
 
   async function handleFileChange(e) {
     const file = e.target.files[0];
@@ -25,6 +27,25 @@
     } else {
       await handleCSVImport(text);
     }
+  }
+
+  function handleTextImport() {
+    errorDetails = [];
+    invalidData = [];
+    if (!csvText.trim()) {
+      importStatus = 'Teks kosong!';
+      return;
+    }
+    handleCSVImport(csvText);
+  }
+
+  function resetImport() {
+    importData = [];
+    invalidData = [];
+    importStatus = '';
+    errorDetails = [];
+    csvText = '';
+    if (fileInput) fileInput.value = '';
   }
 
   async function handleCSVImport(text) {
@@ -207,14 +228,6 @@
       await addCard(deckId, card.front, card.back);
     }
   }
-  
-  function resetImport() {
-    importData = [];
-    invalidData = [];
-    importStatus = '';
-    errorDetails = [];
-    if (fileInput) fileInput.value = '';
-  }
 </script>
 
 <div class="space-y-8 animate-fade-in p-2">
@@ -223,22 +236,56 @@
     <p class="text-xs text-gray-500 font-bold uppercase tracking-widest leading-loose max-w-[250px] mx-auto">Upload file CSV (deck,depan,belakang) atau JSON backup</p>
   </div>
 
-  <button 
-    on:click={() => fileInput.click()}
-    class="w-full flex flex-col items-center justify-center py-16 px-6 border-4 border-dashed border-gray-100 dark:border-gray-800 rounded-[2.5rem] bg-gray-50 dark:bg-gray-800/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/20 active:scale-95 transition-all group"
-    aria-label="Pilih file untuk diimport"
-  >
-    <div class="bg-blue-100 dark:bg-blue-900/30 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/10 mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-      </svg>
+  <div class="flex rounded-2xl bg-gray-100 dark:bg-gray-800 p-1">
+    <button 
+      on:click={() => { inputMode = 'file'; resetImport(); }}
+      class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all {inputMode === 'file' ? 'bg-white dark:bg-gray-700 shadow-md text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}"
+    >
+      Upload File
+    </button>
+    <button 
+      on:click={() => { inputMode = 'text'; resetImport(); }}
+      class="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all {inputMode === 'text' ? 'bg-white dark:bg-gray-700 shadow-md text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}"
+    >
+      Paste Text
+    </button>
+  </div>
+
+  {#if inputMode === 'file'}
+    <button 
+      on:click={() => fileInput.click()}
+      class="w-full flex flex-col items-center justify-center py-16 px-6 border-4 border-dashed border-gray-100 dark:border-gray-800 rounded-[2.5rem] bg-gray-50 dark:bg-gray-800/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/20 active:scale-95 transition-all group"
+      aria-label="Pilih file untuk diimport"
+    >
+      <div class="bg-blue-100 dark:bg-blue-900/30 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/10 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+      </div>
+      <div class="text-center">
+        <h3 class="font-bold text-lg mb-1">Pilih File CSV atau JSON</h3>
+        <p class="text-gray-400 text-xs">Ketuk untuk telusuri file</p>
+      </div>
+      <input type="file" accept=".csv,.json" class="hidden" bind:this={fileInput} on:change={handleFileChange} />
+    </button>
+  {:else}
+    <div class="space-y-4">
+      <div class="relative">
+        <textarea 
+          bind:value={csvText}
+          placeholder="deck,depan,belakang&#10;Bahasa Japan,konnichiwa,halo&#10;Matematika,2+2,4"
+          class="w-full h-48 p-4 rounded-3xl border-2 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 font-mono text-sm focus:border-blue-500 focus:outline-none resize-none"
+        ></textarea>
+        <button 
+          on:click={handleTextImport}
+          class="mt-3 w-full py-3 rounded-2xl font-bold bg-blue-600 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Parse Text
+        </button>
+      </div>
+      <p class="text-[10px] text-gray-400 text-center font-bold uppercase tracking-widest">Format: deck,depan,belakang (satu baris per kartu)</p>
     </div>
-    <div class="text-center">
-      <h3 class="font-bold text-lg mb-1">Pilih File CSV atau JSON</h3>
-      <p class="text-gray-400 text-xs">Ketuk untuk telusuri file</p>
-    </div>
-    <input type="file" accept=".csv,.json" class="hidden" bind:this={fileInput} on:change={handleFileChange} />
-  </button>
+  {/if}
 
   {#if importStatus}
     <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl flex items-center justify-center space-x-3 border border-blue-100 dark:border-blue-900/30 animate-fade-in">
