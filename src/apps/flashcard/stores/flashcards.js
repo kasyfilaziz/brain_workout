@@ -1,5 +1,7 @@
 import { writable, derived } from 'svelte/store';
-import { dbPromise } from '../../../lib/utils/db';
+import { dbPromise, APP_PREFIXES, getStoreNames } from '../../../lib/utils/db';
+
+const stores = getStoreNames(APP_PREFIXES.flashcard);
 
 export const decks = writable([]);
 export const cards = writable([]);
@@ -7,19 +9,19 @@ export const currentDeckId = writable(null);
 
 export async function loadDecks() {
   const db = await dbPromise;
-  const allDecks = await db.getAll('decks');
+  const allDecks = await db.getAll(stores.decks);
   decks.set(allDecks);
 }
 
 export async function loadCards() {
   const db = await dbPromise;
-  const allCards = await db.getAll('cards');
+  const allCards = await db.getAll(stores.cards);
   cards.set(allCards);
 }
 
 export async function addDeck(name) {
   const db = await dbPromise;
-  const id = await db.add('decks', { 
+  const id = await db.add(stores.decks, { 
     name, 
     createdAt: Date.now() 
   });
@@ -29,13 +31,12 @@ export async function addDeck(name) {
 
 export async function deleteDeck(id) {
   const db = await dbPromise;
-  // Delete all cards in the deck
-  const cardsInDeck = await db.getAllFromIndex('cards', 'by-deckId', id);
-  const tx = db.transaction(['decks', 'cards'], 'readwrite');
+  const cardsInDeck = await db.getAllFromIndex(stores.cards, 'by-deckId', id);
+  const tx = db.transaction([stores.decks, stores.cards], 'readwrite');
   for (const card of cardsInDeck) {
-    tx.objectStore('cards').delete(card.id);
+    tx.objectStore(stores.cards).delete(card.id);
   }
-  tx.objectStore('decks').delete(id);
+  tx.objectStore(stores.decks).delete(id);
   await tx.done;
   await loadDecks();
   await loadCards();
@@ -47,34 +48,34 @@ export async function addCard(deckId, front, back) {
     deckId,
     front,
     back,
-    nextReview: Date.now(), // Due immediately
+    nextReview: Date.now(),
     interval: 0,
     easeFactor: 2.5,
     createdAt: Date.now()
   };
-  const id = await db.add('cards', card);
+  const id = await db.add(stores.cards, card);
   await loadCards();
   return id;
 }
 
 export async function updateCard(card) {
   const db = await dbPromise;
-  await db.put('cards', card);
+  await db.put(stores.cards, card);
   await loadCards();
 }
 
 export async function deleteCard(id) {
   const db = await dbPromise;
-  await db.delete('cards', id);
+  await db.delete(stores.cards, id);
   await loadCards();
 }
 
 export async function resetAllData() {
   const db = await dbPromise;
-  const tx = db.transaction(['decks', 'cards', 'settings'], 'readwrite');
-  await tx.objectStore('decks').clear();
-  await tx.objectStore('cards').clear();
-  await tx.objectStore('settings').clear();
+  const tx = db.transaction([stores.decks, stores.cards, stores.settings], 'readwrite');
+  await tx.objectStore(stores.decks).clear();
+  await tx.objectStore(stores.cards).clear();
+  await tx.objectStore(stores.settings).clear();
   await tx.done;
   await loadDecks();
   await loadCards();

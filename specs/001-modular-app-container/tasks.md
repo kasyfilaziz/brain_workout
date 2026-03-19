@@ -126,13 +126,25 @@ description: "Task list for modular app container implementation"
 
 ---
 
+## Phase 6b: Data Isolation (FR-008) - NOT YET IMPLEMENTED
+
+**Purpose**: Ensure each app has isolated data storage per constitution requirement
+
+- [ ] T038 [US2] Implement IndexedDB store prefixes per app (e.g., `flashcard_decks`, `flashcard_cards`)
+- [ ] T039 [US3] Verify data isolation - flashcard data does not leak to other apps
+
+**Checkpoint**: Data isolation verified - each app's data is separate
+
+---
+
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Final improvements and edge case handling
 
 - [x] T033 [P] Add empty state UI when no apps are registered (edge case)
 - [x] T034 [P] Handle app loading errors gracefully with user-friendly message
-- [x] T035 Verify PWA functionality still works with new container structure
+- [x] T040 [P] Verify PWA functionality: Lighthouse score >90, manifest valid, service worker registered
+- [x] T041 Verify SC-004: Theme toggle applies within 100ms (measure with browser devtools)
 - [x] T036 Run `npm run build` to ensure production build succeeds
 - [x] T037 Update README.md if directory structure changed significantly
 
