@@ -1,11 +1,12 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'flashcard_db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 const APP_PREFIXES = {
   flashcard: 'flashcard_',
-  pomodoro: 'pomodoro_'
+  pomodoro: 'pomodoro_',
+  memoryMatch: 'memory_match_'
 };
 
 export function getStoreNames(prefix) {
@@ -13,6 +14,7 @@ export function getStoreNames(prefix) {
     decks: `${prefix}decks`,
     cards: `${prefix}cards`,
     sessions: `${prefix}sessions`,
+    scores: `${prefix}scores`,
     settings: `${prefix}settings`
   };
 }
@@ -69,6 +71,18 @@ export async function initDB() {
 
         if (!db.objectStoreNames.contains(pomodoroStores.settings)) {
           db.createObjectStore(pomodoroStores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 5) {
+        const memoryMatchStores = getStoreNames(APP_PREFIXES.memoryMatch);
+
+        if (!db.objectStoreNames.contains(memoryMatchStores.scores)) {
+          db.createObjectStore(memoryMatchStores.scores, { keyPath: 'gridSize' });
+        }
+
+        if (!db.objectStoreNames.contains(memoryMatchStores.settings)) {
+          db.createObjectStore(memoryMatchStores.settings, { keyPath: 'key' });
         }
       }
     },
