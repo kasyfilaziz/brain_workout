@@ -173,10 +173,7 @@ export async function skipSession() {
     timerInterval = null;
   }
   
-  const session = get(currentSession);
   const state = get(timerState);
-  const completed = get(completedWorkSessions);
-  const currentSettings = get(settings);
   
   releaseWakeLock();
   
@@ -186,7 +183,7 @@ export async function skipSession() {
   } else if (state === 'break' || state === 'waiting_for_break') {
     timerState.set('idle');
     currentSession.set(null);
-    completedWorkSessions.set(0);
+    dailyCount.set(0);
   }
 }
 

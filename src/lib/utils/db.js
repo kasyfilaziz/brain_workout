@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'flashcard_db';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 const APP_PREFIXES = {
   flashcard: 'flashcard_',
@@ -12,6 +12,7 @@ export function getStoreNames(prefix) {
   return {
     decks: `${prefix}decks`,
     cards: `${prefix}cards`,
+    sessions: `${prefix}sessions`,
     settings: `${prefix}settings`
   };
 }
@@ -53,6 +54,21 @@ export async function initDB() {
 
         if (!db.objectStoreNames.contains(stores.settings)) {
           db.createObjectStore(stores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 4) {
+        const pomodoroStores = getStoreNames(APP_PREFIXES.pomodoro);
+
+        if (!db.objectStoreNames.contains(pomodoroStores.sessions)) {
+          const sessionStore = db.createObjectStore(pomodoroStores.sessions, { keyPath: 'id', autoIncrement: true });
+          sessionStore.createIndex('by-date', 'startTime');
+          sessionStore.createIndex('by-type', 'type');
+          sessionStore.createIndex('by-completed', 'completed');
+        }
+
+        if (!db.objectStoreNames.contains(pomodoroStores.settings)) {
+          db.createObjectStore(pomodoroStores.settings, { keyPath: 'key' });
         }
       }
     },

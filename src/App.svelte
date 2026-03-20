@@ -39,7 +39,7 @@
   $: toastVisible = $offlineReady || $needRefresh;
 </script>
 
-<div class="flex-1 flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 min-h-screen">
+<div class="flex-1 flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 h-screen overflow-hidden">
   <header class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-30">
     <div class="flex items-center space-x-2">
       {#if $navigation.currentAppId}
@@ -81,7 +81,7 @@
     </button>
   </header>
 
-  <main class="flex-1 p-5 pb-8 max-w-[600px] mx-auto w-full">
+  <main class="flex-1 p-5 pb-8 max-w-[600px] mx-auto w-full overflow-y-auto">
     {#if !$navigation.currentAppId}
       <Hub />
     {:else if currentApp}
