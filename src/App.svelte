@@ -10,12 +10,41 @@
 
   const { needRefresh, updateServiceWorker, offlineReady } = useRegisterSW();
 
-  // Store for loaded app components
-  let loadedComponents = {};
+  let deferredPrompt = null;
+  let showInstallBanner = false;
+  let installBannerDismissed = false;
+
+  function handleBeforeInstallPrompt(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!installBannerDismissed) {
+      showInstallBanner = true;
+    }
+  }
+
+  async function installApp() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    showInstallBanner = false;
+    if (outcome === 'accepted') {
+      installBannerDismissed = true;
+    }
+  }
+
+  function dismissInstallBanner() {
+    showInstallBanner = false;
+    installBannerDismissed = true;
+  }
 
   onMount(async () => {
     await navigation.init();
     await apps.loadApps();
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   });
 
   function closeToast() {
@@ -40,6 +69,33 @@
 </script>
 
 <div class="flex-1 flex flex-col w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 overflow-hidden relative">
+  {#if showInstallBanner}
+    <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-3 flex items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        <span class="text-sm font-semibold">Install Brain Workouts</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          on:click={installApp}
+          class="bg-white text-blue-600 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          Install
+        </button>
+        <button
+          on:click={dismissInstallBanner}
+          class="text-white/80 hover:text-white p-1"
+          aria-label="Dismiss"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  {/if}
   <header class="border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-30">
     <div class="p-5 max-w-[600px] mx-auto flex justify-between items-center w-full">
       <div class="flex items-center space-x-2">
