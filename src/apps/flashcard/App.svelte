@@ -43,7 +43,7 @@
 
 <div class="flex-1 flex flex-col">
   {#if activeTab !== 'study'}
-    <main class="flex-1 px-2 py-5 pb-24 max-w-[600px] mx-auto w-full">
+    <div class="flex-1 px-5 pt-2 pb-24">
       {#if activeTab === 'dashboard'}
         <Dashboard on:study={(e) => startStudy(e.detail)} on:quickStudy={startQuickStudy} />
       {:else if activeTab === 'import'}
@@ -51,11 +51,11 @@
       {:else if activeTab === 'stats'}
         <StatsView />
       {/if}
-    </main>
+    </div>
   {:else}
-    <main class="flex-1 px-2 py-5 max-w-[600px] mx-auto w-full">
+    <div class="flex-1 px-5 pt-2 pb-5">
       <StudyView deckId={studyingDeckId} isQuickStudy={isQuickStudy} on:finish={finishStudy} />
-    </main>
+    </div>
   {/if}
 
   {#if activeTab !== 'study'}
