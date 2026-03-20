@@ -57,15 +57,17 @@
   <!-- Mastery Grid -->
   <div class="flex flex-col gap-2">
     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Mastery</label>
-    <div class="grid grid-cols-5 gap-1 text-center text-xs">
-      {#each ['add', 'subtract', 'multiply', 'divide', 'mixed'] as op}
-        {#each ['easy', 'medium', 'hard'] as diff}
-          {@const masteryInfo = getMasteryForCombo(op, diff)}
-          <div class="p-1.5 rounded-lg {colorClasses[masteryInfo.color]} text-white font-medium" title="{op} {diff}: {masteryInfo.label}">
-            {masteryInfo.label}
-          </div>
+    <div class="overflow-x-auto -mx-5 px-5">
+      <div class="grid grid-cols-5 gap-1 text-center text-xs min-w-[400px]">
+        {#each ['add', 'subtract', 'multiply', 'divide', 'mixed'] as op}
+          {#each ['easy', 'medium', 'hard'] as diff}
+            {@const masteryInfo = getMasteryForCombo(op, diff)}
+            <div class="p-1 rounded-lg {colorClasses[masteryInfo.color]} text-white font-medium" title="{op} {diff}: {masteryInfo.label}">
+              {masteryInfo.label}
+            </div>
+          {/each}
         {/each}
-      {/each}
+      </div>
     </div>
     <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
       <span>+  -  x  /  ~</span>

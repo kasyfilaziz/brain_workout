@@ -73,7 +73,7 @@
   <!-- Problem Display -->
   {#if $currentProblem}
     <div class="flex flex-col items-center gap-6 py-8">
-      <div class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white select-none">
+      <div class="text-2xl sm:text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white select-none leading-tight">
         {$currentProblem.operand1} {getOperationSymbol($currentProblem.operation)} {$currentProblem.operand2} = ?
       </div>
 

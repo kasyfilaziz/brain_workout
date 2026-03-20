@@ -3,22 +3,22 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/flashcard/',
+  base: '/brain_workout/',
   plugins: [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png'],
       manifest: {
-        name: 'Flashcard App',
-        short_name: 'Flashcard',
-        description: 'Aplikasi flashcard dengan Spaced Repetition',
+        name: 'Brain Workouts',
+        short_name: 'BrainWorkout',
+        description: 'A collection of brain training apps with spaced repetition',
         theme_color: '#4a90d9',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/flashcard/',
-        scope: '/flashcard/',
+        start_url: '/brain_workout/',
+        scope: '/brain_workout/',
         icons: [
           {
             src: 'icons/icon-192.png',
