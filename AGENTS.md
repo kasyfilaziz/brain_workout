@@ -171,6 +171,7 @@ Break the task into a structured roadmap using the `todowrite` tool. Each task m
 - IndexedDB via idb library (per constitution) (002-pomodoro-timer)
 - JavaScript (ES Modules) + Svelte 4.x, idb 8.x, TailwindCSS 3.x (003-memory-match)
 - IndexedDB (via idb library, shared `flashcard_db`) (003-memory-match)
+- IndexedDB via idb library, shared `flashcard_db` (004-math-sprint)
 
 ## Recent Changes
 - 001-modular-app-container: Added JavaScript (ES Modules), Svelte 4.x + Svelte 4.x, TailwindCSS 3.x, idb 8.x, vite-plugin-pwa

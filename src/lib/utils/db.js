@@ -1,12 +1,13 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'flashcard_db';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 const APP_PREFIXES = {
   flashcard: 'flashcard_',
   pomodoro: 'pomodoro_',
-  memoryMatch: 'memory_match_'
+  memoryMatch: 'memory_match_',
+  mathSprint: 'math_sprint_'
 };
 
 export function getStoreNames(prefix) {
@@ -83,6 +84,24 @@ export async function initDB() {
 
         if (!db.objectStoreNames.contains(memoryMatchStores.settings)) {
           db.createObjectStore(memoryMatchStores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 6) {
+        const mathSprintStores = getStoreNames(APP_PREFIXES.mathSprint);
+
+        if (!db.objectStoreNames.contains(mathSprintStores.cards)) {
+          db.createObjectStore(mathSprintStores.cards, { keyPath: 'key' });
+        }
+
+        if (!db.objectStoreNames.contains(mathSprintStores.sessions)) {
+          const sessionStore = db.createObjectStore(mathSprintStores.sessions, { keyPath: 'id', autoIncrement: true });
+          sessionStore.createIndex('by-date', 'date');
+          sessionStore.createIndex('by-operation', 'operation');
+        }
+
+        if (!db.objectStoreNames.contains(mathSprintStores.settings)) {
+          db.createObjectStore(mathSprintStores.settings, { keyPath: 'key' });
         }
       }
     },
