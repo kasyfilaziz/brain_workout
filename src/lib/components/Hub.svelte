@@ -4,13 +4,53 @@
   import AppCard from './AppCard.svelte';
   import LoadingSpinner from './LoadingSpinner.svelte';
 
+  let deferredPrompt = null;
+  let showInstallButton = false;
+
   onMount(() => {
     apps.loadApps();
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallButton = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      showInstallButton = false;
+    });
   });
+
+  async function installApp() {
+    if (!deferredPrompt) {
+      alert('Install prompt not available. Please use your browser menu to add to home screen.');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredPrompt = null;
+      showInstallButton = false;
+    }
+  }
 </script>
 
 <div class="p-6">
-  <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-8">Brain Workouts</h2>
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-3xl font-black text-gray-900 dark:text-white">Brain Workouts</h2>
+    {#if showInstallButton}
+      <button 
+        on:click={installApp}
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors shadow-sm"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Install
+      </button>
+    {/if}
+  </div>
   
   {#if $apps.length === 0}
     <div class="flex flex-col items-center justify-center py-16 text-center">
