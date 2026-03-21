@@ -10,6 +10,7 @@
 
   const { needRefresh, updateServiceWorker, offlineReady } = useRegisterSW();
 
+  let loadedComponents = {};
   let deferredPrompt = null;
   let showInstallBanner = false;
   let installBannerDismissed = false;
