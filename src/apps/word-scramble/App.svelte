@@ -16,8 +16,15 @@
   $: isPlaying = $currentSession !== null;
   
   onMount(async () => {
-    await initWordScrambleStores();
-    loading = false;
+    try {
+      console.log('Word Scramble: Starting initialization...');
+      await initWordScrambleStores();
+      console.log('Word Scramble: Initialization complete');
+      loading = false;
+    } catch (e) {
+      console.error('Word Scramble init error:', e);
+      loading = false;
+    }
     
     window.addEventListener('wordScramble:startGame', handleStartGame);
   });

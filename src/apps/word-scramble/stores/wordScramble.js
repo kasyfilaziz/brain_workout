@@ -18,10 +18,24 @@ let currentWordIndex = 0;
 let currentScrambled = '';
 
 export async function initWordScrambleStores() {
-  await loadCustomLists();
-  await loadProgress();
-  await loadDailyChallenge();
-  await loadSettings();
+  console.log('initWordScrambleStores: Starting...');
+  try {
+    await loadCustomLists();
+    console.log('initWordScrambleStores: loadCustomLists done');
+  } catch (e) { console.error('loadCustomLists error:', e); throw e; }
+  try {
+    await loadProgress();
+    console.log('initWordScrambleStores: loadProgress done');
+  } catch (e) { console.error('loadProgress error:', e); throw e; }
+  try {
+    await loadDailyChallenge();
+    console.log('initWordScrambleStores: loadDailyChallenge done');
+  } catch (e) { console.error('loadDailyChallenge error:', e); throw e; }
+  try {
+    await loadSettings();
+    console.log('initWordScrambleStores: loadSettings done');
+  } catch (e) { console.error('loadSettings error:', e); throw e; }
+  console.log('initWordScrambleStores: All complete');
 }
 
 export async function loadSettings() {
