@@ -6,7 +6,7 @@ THIS IS READ ONLY OPERATION! DO NOT MODIFY OR CREATE ANY FILE!
 
 user input :
 ```
-@ARGUMMENT
+$ARGUMENTS
 ```
 
 **Objective:** Perform a comprehensive review of everything written in the last conversation.
