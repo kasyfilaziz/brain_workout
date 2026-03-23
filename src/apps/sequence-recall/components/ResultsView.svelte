@@ -49,7 +49,7 @@
         return { type: 'sound', message: 'Try Sound-only mode' };
       }
       if (positionAccuracy > 80) return 'up';
-      if (positionAccuracy < 50) return 'down';
+      if (positionAccuracy < 50 || soundAccuracy < 50) return 'down';
       return 'stay';
     }
     if (positionAccuracy > 80) return 'up';

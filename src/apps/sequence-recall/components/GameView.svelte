@@ -173,8 +173,8 @@
       ...(soundTally && { soundMisses: soundTally.misses }),
       ...(soundTally && { soundFalseAlarms: soundTally.falseAlarms }),
       ...(soundTally && { soundCorrectRejections: soundTally.correctRejections }),
-      dScore: state.dScore ?? 0,
-      ...(state.soundDScore !== undefined && { soundDScore: state.soundDScore }),
+      dScore: clampDPrime(calculateDPrime(posTally.hits, posTally.misses, posTally.falseAlarms, posTally.correctRejections)),
+      ...(soundTally && { soundDScore: clampDPrime(calculateDPrime(soundTally.hits, soundTally.misses, soundTally.falseAlarms, soundTally.correctRejections)) }),
       avgReactionTimeMs: state.reactionTimes.length > 0
         ? Math.round(state.reactionTimes.reduce((a, b) => a + b, 0) / state.reactionTimes.length)
         : 0,

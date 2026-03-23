@@ -20,6 +20,7 @@
   });
   
   $: if (show && stimulus) {
+    audioWarningShown = false;
     startTimer();
     if ((taskType === 'sound' || taskType === 'dual') && stimulus.sound) {
       if (audioAvailable) {
