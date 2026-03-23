@@ -172,6 +172,10 @@ Break the task into a structured roadmap using the `todowrite` tool. Each task m
 - JavaScript (ES Modules) + Svelte 4.x, idb 8.x, TailwindCSS 3.x (003-memory-match)
 - IndexedDB (via idb library, shared `flashcard_db`) (003-memory-match)
 - IndexedDB via idb library, shared `flashcard_db` (004-math-sprint)
+- JavaScript (ES Modules), Svelte 4.x + Svelte 4, TailwindCSS 3, idb 8.x, vite-plugin-pwa (005-word-scramble)
+- IndexedDB (idb library) - local persistence (005-word-scramble)
+- JavaScript (ES Modules) - Svelte 4.x + Svelte 4.x, idb 8.x (IndexedDB), vite-plugin-pwa (006-sequence-recall)
+- IndexedDB via idb library (per-app prefix `sequence_recall_*`) (006-sequence-recall)
 
 ## Recent Changes
 - 001-modular-app-container: Added JavaScript (ES Modules), Svelte 4.x + Svelte 4.x, TailwindCSS 3.x, idb 8.x, vite-plugin-pwa

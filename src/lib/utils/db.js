@@ -1,13 +1,15 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'flashcard_db';
-const DB_VERSION = 6;
+const DB_VERSION = 8;
 
 const APP_PREFIXES = {
   flashcard: 'flashcard_',
   pomodoro: 'pomodoro_',
   memoryMatch: 'memory_match_',
-  mathSprint: 'math_sprint_'
+  mathSprint: 'math_sprint_',
+  wordScramble: 'word_scramble_',
+  sequenceRecall: 'sequence_recall_'
 };
 
 export function getStoreNames(prefix) {
@@ -16,7 +18,10 @@ export function getStoreNames(prefix) {
     cards: `${prefix}cards`,
     sessions: `${prefix}sessions`,
     scores: `${prefix}scores`,
-    settings: `${prefix}settings`
+    settings: `${prefix}settings`,
+    customLists: `${prefix}custom_lists`,
+    progress: `${prefix}progress`,
+    dailyChallenges: `${prefix}daily_challenges`
   };
 }
 
@@ -102,6 +107,48 @@ export async function initDB() {
 
         if (!db.objectStoreNames.contains(mathSprintStores.settings)) {
           db.createObjectStore(mathSprintStores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 7) {
+        const wordScrambleStores = getStoreNames(APP_PREFIXES.wordScramble);
+
+        if (!db.objectStoreNames.contains(wordScrambleStores.customLists)) {
+          const store = db.createObjectStore(wordScrambleStores.customLists, { keyPath: 'id', autoIncrement: true });
+          store.createIndex('by-name', 'name');
+        }
+
+        if (!db.objectStoreNames.contains(wordScrambleStores.progress)) {
+          const store = db.createObjectStore(wordScrambleStores.progress, { keyPath: 'wordText' });
+          store.createIndex('by-nextReview', 'nextReview');
+        }
+
+        if (!db.objectStoreNames.contains(wordScrambleStores.sessions)) {
+          const store = db.createObjectStore(wordScrambleStores.sessions, { keyPath: 'id', autoIncrement: true });
+          store.createIndex('by-date', 'timestamp');
+        }
+
+        if (!db.objectStoreNames.contains(wordScrambleStores.dailyChallenges)) {
+          db.createObjectStore(wordScrambleStores.dailyChallenges, { keyPath: 'date' });
+        }
+
+        if (!db.objectStoreNames.contains(wordScrambleStores.settings)) {
+          db.createObjectStore(wordScrambleStores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 8) {
+        const sequenceRecallStores = getStoreNames(APP_PREFIXES.sequenceRecall);
+
+        if (!db.objectStoreNames.contains(sequenceRecallStores.sessions)) {
+          const sessionStore = db.createObjectStore(sequenceRecallStores.sessions, { keyPath: 'id', autoIncrement: true });
+          sessionStore.createIndex('by-date', 'date');
+          sessionStore.createIndex('by-nLevel', 'nLevel');
+          sessionStore.createIndex('by-taskType', 'taskType');
+        }
+
+        if (!db.objectStoreNames.contains(sequenceRecallStores.settings)) {
+          db.createObjectStore(sequenceRecallStores.settings, { keyPath: 'key' });
         }
       }
     },
