@@ -288,6 +288,13 @@
   - PWA manifest correct
   - Test on mobile device if possible
 
+## Post-Review Bug Fixes
+
+### Fixed Issues (from code review):
+- **saveIncompleteSession()**: Now recalculates d' from tallied responses instead of using stale state values
+- **Dual suggestion logic**: Now triggers "down" when either position or sound accuracy < 50%
+- **audioWarningShown**: Now resets to false each time a new stimulus is shown
+
 ## Dependency Graph
 
 ```
