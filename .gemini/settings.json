@@ -1,0 +1,12 @@
+{
+  "general": {
+    "previewFeatures": true
+  },
+  "ui": {
+    "inlineThinkingMode": "full",
+    "showStatusInTitle": true
+  },
+  "model": {
+    "name": ""
+  }
+}
