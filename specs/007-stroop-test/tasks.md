@@ -33,4 +33,10 @@
 
 ## Phase 6: Polish
 - [X] T014 Implement high-contrast color palette settings in `src/apps/stroop-test/stores/settings.js`
-- [X] T015 Final cross-browser PWA verification and build test
+- [X] T015 PWA verification: Chrome Desktop (Lighthouse >90), Chrome Android, Safari iOS. Verify service worker, manifest, and offline functionality.
+
+## Phase 7: Post-Implementation Enhancements (Tech Debt)
+- [X] T016 [P] [FR-005] Implement haptic feedback utility in `src/apps/stroop-test/utils/haptics.js`
+- [X] T017 [P] [FR-005] Integrate haptic feedback into session response flow in `App.svelte`
+- [X] T018 [FR-007] Add Timed mode support with timer interval in `src/apps/stroop-test/stores/session.js`
+- [X] T019 [FR-007] Add Timed/Fixed mode selection UI in `src/apps/stroop-test/App.svelte`

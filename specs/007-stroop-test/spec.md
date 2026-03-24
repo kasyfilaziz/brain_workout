@@ -2,7 +2,7 @@
 
 **Feature Branch**: `007-stroop-test`  
 **Created**: 2026-03-23  
-**Status**: Draft  
+**Status**: Final  
 **Input**: User description: "Implement the Stroop Test brain workout module for measuring inhibitory control and cognitive flexibility"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -47,7 +47,14 @@ A user wants to see how their inhibitory control is improving over time by viewi
 
 **Acceptance Scenarios**:
 
-1. **Given** the user has completed at least one of each session type (W, C, CW), **When** they view results, **Then** the system displays the calculated Interference Score ($IG$) using the formula $Actual CW - (W \times C) / (W + C)$.
+1. **Given** the user has completed at least one of each session type (W, C, CW), **When** they view results, **Then** the system displays the calculated Interference Score ($IG$) using the formula:
+
+   $$IG = ActualCW - \frac{W \times C}{W + C}$$
+
+   Where:
+   - $ActualCW$ = average RT in correct interference (CW) trials
+   - $W$ = average Word Reading RT (from StroopProfile)
+   - $C$ = average Color Naming RT (from StroopProfile)
 
 ---
 
@@ -84,7 +91,7 @@ A user wants to see how their inhibitory control is improving over time by viewi
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can complete a standard 50-item interference set in under 90 seconds (average).
+- **SC-001**: A user completing a standard 50-item Fixed-set interference (CW) session SHOULD finish in under 90 seconds, measured as session duration from first stimulus to last response.
 - **SC-002**: Reaction time measurements are consistent within ±10ms across identical stimuli in baseline modes.
 - **SC-003**: 100% of completed sessions are persisted and available for historical review.
 - **SC-004**: Users receive immediate feedback (visual/haptic) within 50ms of a tap.

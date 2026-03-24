@@ -5,36 +5,68 @@ import { dbPromise, APP_PREFIXES, getStoreNames } from '../../../lib/utils/db';
 function createSessionStore() {
   const initialState = {
     isActive: false,
-    mode: null, // 'W', 'C', 'CW'
-    type: 'Fixed', // 'Timed' | 'Fixed'
+    mode: null,
+    type: 'Fixed',
     startTime: null,
     currentStimulus: null,
     results: [],
     itemCount: 50,
-    timeLimit: 45000, // 45s
+    timeLimit: 45000,
     elapsed: 0,
     isFinished: false
   };
 
   const { subscribe, set, update } = writable(initialState);
+  let timerInterval = null;
+
+  function clearTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startTimer() {
+    clearTimer();
+    timerInterval = setInterval(() => {
+      const state = get({ subscribe });
+      if (!state.isActive || state.isFinished) {
+        clearTimer();
+        return;
+      }
+      const elapsed = performance.now() - state.startTime;
+      if (elapsed >= state.timeLimit) {
+        clearTimer();
+        update(s => ({ ...s, elapsed, isFinished: true, isActive: false, currentStimulus: null }));
+      } else {
+        update(s => ({ ...s, elapsed }));
+      }
+    }, 50);
+  }
 
   return {
     subscribe,
     start: (mode, type = 'Fixed') => {
+      clearTimer();
       const stimulus = generateStimulus(mode);
-      set({
+      const newState = {
         ...initialState,
         isActive: true,
         mode,
         type,
         startTime: performance.now(),
         currentStimulus: stimulus,
-        results: []
-      });
+        results: [],
+        elapsed: 0
+      };
+      set(newState);
+      if (type === 'Timed') {
+        startTimer();
+      }
     },
     respond: (colorKey) => {
       const state = get({ subscribe });
-      if (!state.isActive || state.isFinished) return;
+      if (!state.isActive || state.isFinished) return null;
 
       const now = performance.now();
       const reactionTime = now - (state.lastStimulusTime || state.startTime);
@@ -52,10 +84,13 @@ function createSessionStore() {
 
       const newResults = [...state.results, newResult];
       
-      // Check finish condition
       let isFinished = false;
       if (state.type === 'Fixed' && newResults.length >= state.itemCount) {
         isFinished = true;
+        clearTimer();
+      } else if (state.type === 'Timed' && (performance.now() - state.startTime) >= state.timeLimit) {
+        isFinished = true;
+        clearTimer();
       }
 
       if (isFinished) {
@@ -69,6 +104,8 @@ function createSessionStore() {
           lastStimulusTime: now
         }));
       }
+
+      return isCorrect;
     },
     save: async () => {
       const state = get({ subscribe });
@@ -86,7 +123,10 @@ function createSessionStore() {
 
       await db.add(stores.sessions, sessionData);
     },
-    reset: () => set(initialState)
+    reset: () => {
+      clearTimer();
+      set(initialState);
+    }
   };
 }
 
