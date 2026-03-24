@@ -9,6 +9,8 @@ function createSettingsStore() {
     streak: 0,
     lastStudyDate: null,
     totalStudyDays: 0,
+    hubViewMode: 'grid',
+    hubAppOrder: null,
   };
 
   const { subscribe, set, update } = writable(defaultSettings);
@@ -21,12 +23,16 @@ function createSettingsStore() {
       const streakSetting = await db.get('settings', 'streak');
       const lastStudyDateSetting = await db.get('settings', 'lastStudyDate');
       const totalStudyDaysSetting = await db.get('settings', 'totalStudyDays');
+      const hubViewModeSetting = await db.get('settings', 'hubViewMode');
+      const hubAppOrderSetting = await db.get('settings', 'hubAppOrder');
 
       set({
         theme: themeSetting?.value || defaultSettings.theme,
         streak: streakSetting?.value ?? defaultSettings.streak,
         lastStudyDate: lastStudyDateSetting?.value || defaultSettings.lastStudyDate,
         totalStudyDays: totalStudyDaysSetting?.value ?? defaultSettings.totalStudyDays,
+        hubViewMode: hubViewModeSetting?.value || defaultSettings.hubViewMode,
+        hubAppOrder: hubAppOrderSetting?.value ?? defaultSettings.hubAppOrder,
       });
     } catch (e) {
       console.error('Failed to load settings:', e);
@@ -46,6 +52,16 @@ function createSettingsStore() {
   async function setTheme(newTheme) {
     update(s => ({ ...s, theme: newTheme }));
     await save('theme', newTheme);
+  }
+
+  async function setHubViewMode(mode) {
+    update(s => ({ ...s, hubViewMode: mode }));
+    await save('hubViewMode', mode);
+  }
+
+  async function setHubAppOrder(appIds) {
+    update(s => ({ ...s, hubAppOrder: appIds }));
+    await save('hubAppOrder', appIds);
   }
 
   async function updateStudiedToday() {
@@ -92,6 +108,8 @@ function createSettingsStore() {
   return {
     subscribe,
     setTheme,
+    setHubViewMode,
+    setHubAppOrder,
     updateStudiedToday,
     load,
     reset,

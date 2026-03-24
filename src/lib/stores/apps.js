@@ -50,4 +50,19 @@ function createAppsStore() {
   };
 }
 
+export function getOrderedApps(viewMode, appsList, storedOrder) {
+  if (viewMode === 'grid') {
+    return [...appsList].sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    if (storedOrder && storedOrder.length > 0) {
+      const ordered = storedOrder
+        .map(id => appsList.find(a => a.id === id))
+        .filter(Boolean);
+      const newApps = appsList.filter(a => !storedOrder.includes(a.id));
+      return [...ordered, ...newApps];
+    }
+    return appsList;
+  }
+}
+
 export const apps = createAppsStore();

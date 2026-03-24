@@ -84,3 +84,10 @@ src/
 ### Recent Changes
 - **001-modular-app-container:** Initial setup with Svelte 4, Tailwind CSS, and PWA support.
 - **Docs:** Refactored SOPs to align with standard AI agent behavior guidelines.
+
+## Active Technologies
+- JavaScript (ES Modules), Svelte 4.x + Svelte 4.2.x, TailwindCSS 3.4.x, idb 8.x, vite-plugin-pwa 0.21.x (008-hub-view-toggle)
+- IndexedDB (via idb library) (008-hub-view-toggle)
+
+## Recent Changes
+- 008-hub-view-toggle: Added JavaScript (ES Modules), Svelte 4.x + Svelte 4.2.x, TailwindCSS 3.4.x, idb 8.x, vite-plugin-pwa 0.21.x
