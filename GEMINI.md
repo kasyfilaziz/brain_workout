@@ -1,4 +1,4 @@
-# AI Coding Agent Standard Operating Procedures
+﻿# AI Coding Agent Standard Operating Procedures
 
 This document defines the mandatory behavior and execution standards for the AI agent within this project. These rules apply to all languages (JavaScript, Svelte, CSS, etc.) and take precedence over default behaviors.
 

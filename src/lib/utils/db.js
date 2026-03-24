@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'flashcard_db';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 const APP_PREFIXES = {
   flashcard: 'flashcard_',
@@ -9,7 +9,8 @@ const APP_PREFIXES = {
   memoryMatch: 'memory_match_',
   mathSprint: 'math_sprint_',
   wordScramble: 'word_scramble_',
-  sequenceRecall: 'sequence_recall_'
+  sequenceRecall: 'sequence_recall_',
+  stroopTest: 'stroop_test_'
 };
 
 export function getStoreNames(prefix) {
@@ -21,7 +22,8 @@ export function getStoreNames(prefix) {
     settings: `${prefix}settings`,
     customLists: `${prefix}custom_lists`,
     progress: `${prefix}progress`,
-    dailyChallenges: `${prefix}daily_challenges`
+    dailyChallenges: `${prefix}daily_challenges`,
+    profiles: `${prefix}profiles`
   };
 }
 
@@ -149,6 +151,24 @@ export async function initDB() {
 
         if (!db.objectStoreNames.contains(sequenceRecallStores.settings)) {
           db.createObjectStore(sequenceRecallStores.settings, { keyPath: 'key' });
+        }
+      }
+
+      if (oldVersion < 9) {
+        const stroopTestStores = getStoreNames(APP_PREFIXES.stroopTest);
+
+        if (!db.objectStoreNames.contains(stroopTestStores.sessions)) {
+          const sessionStore = db.createObjectStore(stroopTestStores.sessions, { keyPath: 'id', autoIncrement: true });
+          sessionStore.createIndex('by-date', 'timestamp');
+          sessionStore.createIndex('by-mode', 'mode');
+        }
+
+        if (!db.objectStoreNames.contains(stroopTestStores.profiles)) {
+          db.createObjectStore(stroopTestStores.profiles, { keyPath: 'userId' });
+        }
+
+        if (!db.objectStoreNames.contains(stroopTestStores.settings)) {
+          db.createObjectStore(stroopTestStores.settings, { keyPath: 'key' });
         }
       }
     },
