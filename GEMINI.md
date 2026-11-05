@@ -47,10 +47,13 @@ Once the intent is clear, break the prompt into a structured roadmap. Use `todow
 - **Build:** `npm run build`
 - **Preview:** `npm run preview`
 - **Running Tests:** Note: This project does not currently have a test framework configured.
+- **Deployment:** Pushes to `master` or manual workflow runs deploy `dist/` to GitHub Pages through `.github/workflows/deploy.yml`.
+- **Project-site base path:** Keep Vite `base`, PWA `start_url`, and PWA `scope` aligned at `/brain_workout/`.
 
 ### Project Structure
 ```
 src/
+├── apps/              # Self-contained workout modules
 ├── lib/
 │   ├── components/    # Svelte components
 │   ├── stores/         # Svelte stores (state management)
@@ -58,6 +61,9 @@ src/
 ├── App.svelte         # Root component
 ├── main.js            # Entry point
 └── app.css            # Global styles
+public/                # PWA icons and static assets
+specs/                 # Feature specifications and implementation plans
+.github/workflows/     # GitHub Pages deployment
 ```
 
 ### Code Style Guidelines
@@ -74,13 +80,17 @@ src/
 - **Styling:** Tailwind CSS 3
 - **Database:** IndexedDB (via `idb` library)
 - **PWA:** `vite-plugin-pwa`
+- **Deployment:** GitHub Pages via GitHub Actions
 - **Package Manager:** npm
 - **Note:** Client-side only; SM-2 algorithm used for spaced repetition (`src/lib/utils/sm2.js`).
 
 ### Active Technologies (Reference)
-- JavaScript (ES Modules), Svelte 4.x, TailwindCSS 3.x, idb 8.x, vite-plugin-pwa (Used across all modular apps: 001-006).
+- JavaScript (ES Modules), Svelte 4.x, TailwindCSS 3.x, idb 8.x, vite-plugin-pwa (Used across all modular apps: 001-008).
 - IndexedDB via `idb` library for local-first persistence.
 
 ### Recent Changes
 - **001-modular-app-container:** Initial setup with Svelte 4, Tailwind CSS, and PWA support.
+- **007-stroop-test:** Added the Stroop Test attention and inhibitory-control module.
+- **008-hub-view-toggle:** Added grid/list Hub views, drag ordering, and persisted UI settings.
+- **PWA theming:** Android status-bar colors now follow the app's light/dark theme.
 - **Docs:** Refactored SOPs to align with standard AI agent behavior guidelines.

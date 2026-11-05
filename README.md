@@ -12,6 +12,7 @@ This platform hosts several "workout" modules designed to improve various cognit
 - **Math Sprint**: Fast-paced mental arithmetic challenges to improve calculation speed.
 - **Word Scramble**: Vocabulary and pattern recognition training.
 - **Sequence Recall**: Working memory training focusing on pattern and sequence reproduction.
+- **Stroop Test**: Attention and inhibitory-control training using word and color interference.
 
 ---
 
@@ -19,7 +20,7 @@ This platform hosts several "workout" modules designed to improve various cognit
 
 ### Platform-wide Features
 - **PWA (Progressive Web App)**: Installable on mobile (Android/iOS) and desktop for a native-like experience.
-- **Offline First**: All data is stored locally via **IndexedDB**; the app works entirely without an internet connection.
+- **Offline First**: App data is stored locally via **IndexedDB**, with selected UI preferences in `localStorage`; the app works without an internet connection.
 - **Dark Mode**: Support for dark and light themes with system-aware automatic switching.
 - **Haptic Feedback**: Tactile vibration feedback on mobile devices for interactions and errors.
 - **Modular Architecture**: A container-based system that allows new workout modules to be added easily.
@@ -40,6 +41,7 @@ This platform hosts several "workout" modules designed to improve various cognit
 - **Build Tool**: Vite 4
 - **Storage**: IndexedDB (via `idb` library)
 - **PWA**: `vite-plugin-pwa`
+- **Deployment**: GitHub Pages via GitHub Actions
 
 ---
 
@@ -71,6 +73,21 @@ npm run preview
 
 ---
 
+## Deployment
+
+The production app is deployed to GitHub Pages at:
+
+https://kasyfilaziz.github.io/brain_workout/
+
+Pushes to `master` and manual workflow runs trigger `.github/workflows/deploy.yml`.
+The workflow installs dependencies, runs `npm run build`, and publishes `dist/`.
+
+Because this is a project site, keep the Vite `base`, PWA `start_url`, and PWA
+`scope` set to `/brain_workout/`. Changing one without the others can break
+assets, navigation, or service-worker updates after deployment.
+
+---
+
 ## Project Structure
 
 ```
@@ -82,12 +99,15 @@ npm run preview
     /math-sprint       # Arithmetic module
     /word-scramble     # Vocabulary module
     /sequence-recall   # Working memory module
+    /stroop-test       # Attention and inhibition module
   /lib
     /components        # Shared UI components (Hub, Loading, etc.)
     /stores            # Global state (theme, navigation, apps)
     /utils             # Shared utilities (DB, SM-2, Haptics)
   App.svelte           # Root App Container (Modular Loader)
   main.js              # Platform Entry Point
+/public                # PWA icons and static assets
+/specs                 # Feature specifications and implementation plans
 ```
 
 ---
@@ -137,6 +157,11 @@ After Review:
 1. Open the app in Safari.
 2. Tap the **Share** button.
 3. Scroll down and select **"Add to Home Screen"**.
+
+The Android status bar color comes from the `theme-color` meta tags in
+`index.html`. `src/lib/stores/theme.js` updates those tags whenever the in-app
+light/dark theme changes. Keep the manifest `theme_color` in `vite.config.js`
+aligned with the light theme fallback.
 
 ---
 

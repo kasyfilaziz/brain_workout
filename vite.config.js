@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'Brain Workouts',
         short_name: 'BrainWorkout',
         description: 'A collection of brain training apps with spaced repetition',
-        theme_color: '#4a90d9',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
