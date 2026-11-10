@@ -1,5 +1,6 @@
-import { writable, derived } from 'svelte/store';
-import { dbPromise, APP_PREFIXES, getStoreNames } from '../../../lib/utils/db';
+import { writable } from 'svelte/store';
+import { dbPromise, APP_PREFIXES, getStoreNames } from '../../../lib/utils/db.js';
+import { normalizeBackup } from '../utils/backup.js';
 
 const stores = getStoreNames(APP_PREFIXES.flashcard);
 
@@ -62,6 +63,53 @@ export async function updateCard(card) {
   const db = await dbPromise;
   await db.put(stores.cards, card);
   await loadCards();
+}
+
+export async function importFlashcardBackup(data) {
+  const normalized = normalizeBackup(data);
+  if (normalized.decks.length === 0) {
+    throw new Error('Backup does not contain any valid decks');
+  }
+
+  const db = await dbPromise;
+  const tx = db.transaction([stores.decks, stores.cards], 'readwrite');
+  const deckStore = tx.objectStore(stores.decks);
+  const cardStore = tx.objectStore(stores.cards);
+  const deckIdMap = new Map();
+
+  for (const deck of normalized.decks) {
+    const deckId = await deckStore.add({
+      name: deck.name,
+      createdAt: deck.createdAt
+    });
+    deckIdMap.set(deck.sourceKey, deckId);
+  }
+
+  for (const card of normalized.cards) {
+    const deckId = deckIdMap.get(card.sourceDeckKey);
+    if (deckId === undefined) continue;
+
+    await cardStore.add({
+      deckId,
+      front: card.front,
+      back: card.back,
+      interval: card.interval,
+      easeFactor: card.easeFactor,
+      nextReview: card.nextReview,
+      createdAt: card.createdAt
+    });
+  }
+
+  await tx.done;
+  await loadDecks();
+  await loadCards();
+
+  return {
+    deckCount: normalized.decks.length,
+    cardCount: normalized.cards.length,
+    invalidCards: normalized.invalidCards,
+    unknownDeckReferences: normalized.unknownDeckReferences
+  };
 }
 
 export async function deleteCard(id) {

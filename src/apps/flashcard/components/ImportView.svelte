@@ -1,5 +1,7 @@
 <script>
-  import { addDeck, addCard, decks } from '../stores/flashcards';
+  import { addDeck, addCard, decks, importFlashcardBackup } from '../stores/flashcards';
+  import { normalizeBackup } from '../utils/backup';
+  import { parseFlashcardCSV } from '../utils/csv';
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher();
@@ -17,12 +19,14 @@
     const file = e.target.files[0];
     if (!file) return;
     
+    importData = [];
     errorDetails = [];
     invalidData = [];
+    importStatus = '';
     
     const text = await file.text();
     
-    if (file.name.endsWith('.json')) {
+    if (file.name.toLowerCase().endsWith('.json')) {
       await handleJSONImport(text);
     } else {
       await handleCSVImport(text);
@@ -30,6 +34,7 @@
   }
 
   function handleTextImport() {
+    importData = [];
     errorDetails = [];
     invalidData = [];
     if (!csvText.trim()) {
@@ -50,72 +55,38 @@
 
   async function handleCSVImport(text) {
     importType = 'csv';
-    const rows = text.split('\n').filter(r => r.trim());
-    
-    if (rows.length === 0) {
-      importStatus = 'File kosong!';
-      return;
-    }
-    
-    const header = rows[0].toLowerCase();
-    if (!header.includes('deck') || !header.includes('depan') || !header.includes('belakang')) {
-      importStatus = 'Header CSV tidak valid!';
-      errorDetails = ['Header harus mengandung: deck, depan, belakang'];
-      return;
-    }
-    
-    const parseCSVRow = (row) => {
-      const result = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < row.length; i++) {
-        const char = row[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          result.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-      result.push(current.trim());
-      return result.map(p => p.replace(/^"|"$/g, ''));
-    };
+    const parsed = parseFlashcardCSV(text);
 
-    const validItems = [];
-    const invalidItems = [];
-    
-    rows.slice(1).forEach((row, index) => {
-      const parts = parseCSVRow(row);
-      if (parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) {
-        invalidItems.push({ row: index + 2, reason: 'Data tidak lengkap' });
-      } else {
-        validItems.push({
-          type: 'csv',
-          deck: parts[0],
-          front: parts[1],
-          back: parts[2]
-        });
-      }
-    });
-    
-    importData = validItems;
-    invalidData = invalidItems;
-    
+    if (parsed.errors.length > 0) {
+      importData = [];
+      invalidData = [];
+      importStatus = 'File CSV tidak valid!';
+      errorDetails = parsed.errors.map((error) => `Baris ${error.row}: ${error.reason}`);
+      return;
+    }
+
+    importData = parsed.items.map((item) => ({
+      type: 'csv',
+      ...item
+    }));
+    invalidData = parsed.invalidRows;
+
     if (importData.length === 0) {
       importStatus = 'Tidak ada data valid ditemukan!';
-      errorDetails = invalidItems.map(i => `Baris ${i.row}: ${i.reason}`);
+      errorDetails = invalidData.map((item) => `Baris ${item.row}: ${item.reason}`);
     } else {
       importStatus = `Ditemukan ${importData.length} kartu valid.`;
       if (invalidData.length > 0) {
-        errorDetails = [`${invalidData.length} baris dilewati karena tidak valid`];
+        errorDetails = invalidData.map((item) => `Baris ${item.row}: ${item.reason}`);
       }
     }
   }
 
   async function handleJSONImport(text) {
     importType = 'json';
+    importData = [];
+    invalidData = [];
+    errorDetails = [];
     try {
       const data = JSON.parse(text);
       
@@ -131,6 +102,7 @@
       if (errors.length > 0) {
         importStatus = 'Format JSON tidak valid!';
         errorDetails = errors;
+        importData = [];
         return;
       }
       
@@ -144,6 +116,7 @@
       if (errors.length > 0) {
         importStatus = 'Format JSON tidak valid!';
         errorDetails = errors;
+        importData = [];
         return;
       }
       
@@ -152,16 +125,31 @@
         errorDetails = [`${invalidCards.length} kartu memiliki data yang tidak lengkap`];
       }
 
+      const normalized = normalizeBackup(data);
+      if (normalized.decks.length === 0) {
+        importStatus = 'Format JSON tidak valid!';
+        errorDetails.push('Tidak ada deck valid yang dapat diimport');
+        importData = [];
+        return;
+      }
+
+      if (normalized.unknownDeckReferences > 0) {
+        errorDetails.push(`${normalized.unknownDeckReferences} kartu merujuk deck yang tidak ada dan akan dilewati`);
+      }
+
       importData = [{
         type: 'json',
         decks: data.decks,
-        cards: data.cards.filter(c => c.front && c.back)
+        cards: data.cards.filter(c => c.front && c.back),
+        deckCount: normalized.decks.length,
+        cardCount: normalized.cards.length
       }];
       
-      importStatus = `Ditemukan ${data.decks.length} deck dan ${importData[0].cards.length} kartu valid.`;
+      importStatus = `Ditemukan ${normalized.decks.length} deck dan ${normalized.cards.length} kartu valid.`;
     } catch (e) {
       importStatus = 'Gagal membaca file JSON!';
       errorDetails = ['File tidak dapat dibaca. Pastikan format JSON benar.'];
+      importData = [];
       console.error(e);
     }
   }
@@ -214,19 +202,7 @@
 
   async function importJSON() {
     const data = importData[0];
-    const deckIdMap = new Map();
-
-    for (const deck of data.decks) {
-      if (!deck.name) continue;
-      const id = await addDeck(deck.name);
-      deckIdMap.set(deck.id || deck.name, id);
-    }
-
-    for (const card of data.cards) {
-      if (!card.front || !card.back) continue;
-      const deckId = deckIdMap.get(card.deckId) || card.deckId;
-      await addCard(deckId, card.front, card.back);
-    }
+    await importFlashcardBackup(data);
   }
 </script>
 
@@ -339,11 +315,11 @@
         </div>
         <div class="grid grid-cols-2 gap-4 text-center">
           <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl">
-            <p class="text-2xl font-black">{importData[0].decks?.length || 0}</p>
+            <p class="text-2xl font-black">{importData[0].deckCount || 0}</p>
             <p class="text-[10px] font-bold text-gray-400 uppercase">Deck</p>
           </div>
           <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl">
-            <p class="text-2xl font-black">{importData[0].cards?.length || 0}</p>
+            <p class="text-2xl font-black">{importData[0].cardCount || 0}</p>
             <p class="text-[10px] font-bold text-gray-400 uppercase">Kartu</p>
           </div>
         </div>

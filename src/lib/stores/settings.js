@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { dbPromise } from '../utils/db';
 
 const isClient = typeof window !== 'undefined';
@@ -13,7 +13,8 @@ function createSettingsStore() {
     hubAppOrder: null,
   };
 
-  const { subscribe, set, update } = writable(defaultSettings);
+  const settingsStore = writable(defaultSettings);
+  const { subscribe, set, update } = settingsStore;
 
   async function load() {
     if (!isClient) return;
@@ -66,37 +67,42 @@ function createSettingsStore() {
 
   async function updateStudiedToday() {
     const today = new Date().toDateString();
-    update(async (s) => {
-      let newStreak = s.streak;
-      let newTotalStudyDays = s.totalStudyDays;
-      const lastDate = s.lastStudyDate ? new Date(s.lastStudyDate).toDateString() : null;
+    const current = get(settingsStore);
+    let newStreak = current.streak;
+    let newTotalStudyDays = current.totalStudyDays;
+    const lastDate = current.lastStudyDate ? new Date(current.lastStudyDate).toDateString() : null;
 
-      if (lastDate !== today) {
-        newTotalStudyDays++;
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toDateString();
+    if (lastDate !== today) {
+      newTotalStudyDays += 1;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toDateString();
 
-        if (lastDate === yesterdayStr) {
-          newStreak++;
-        } else if (lastDate !== today) {
-          newStreak = 1;
-        }
+      if (lastDate === yesterdayStr) {
+        newStreak += 1;
+      } else {
+        newStreak = 1;
       }
+    }
 
-      const newSettings = {
-        ...s,
-        streak: newStreak,
-        lastStudyDate: today,
-        totalStudyDays: newTotalStudyDays,
-      };
+    const newSettings = {
+      ...current,
+      streak: newStreak,
+      lastStudyDate: today,
+      totalStudyDays: newTotalStudyDays
+    };
 
-      await save('streak', newStreak);
-      await save('lastStudyDate', today);
-      await save('totalStudyDays', newTotalStudyDays);
+    if (isClient) {
+      const db = await dbPromise;
+      const tx = db.transaction('settings', 'readwrite');
+      const store = tx.objectStore('settings');
+      await store.put({ key: 'streak', value: newStreak });
+      await store.put({ key: 'lastStudyDate', value: today });
+      await store.put({ key: 'totalStudyDays', value: newTotalStudyDays });
+      await tx.done;
+    }
 
-      return newSettings;
-    });
+    set(newSettings);
   }
 
   async function reset() {

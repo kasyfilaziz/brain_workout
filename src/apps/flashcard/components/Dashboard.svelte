@@ -3,6 +3,7 @@
   import DeckCard from './DeckCard.svelte';
   import Modal from './Modal.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { buildDeckStats } from '../utils/deckStats';
 
   const dispatch = createEventDispatcher();
   let isAddModalOpen = false;
@@ -16,16 +17,19 @@
   let searchQuery = '';
   let sortBy = 'name'; // 'name', 'newest', 'due'
 
+  $: deckStats = buildDeckStats($cards);
+
   $: filteredDecks = $decks
     .filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       if (sortBy === 'newest') return (b.createdAt || 0) - (a.createdAt || 0);
-      if (sortBy === 'due') return getDueCount(b.id) - getDueCount(a.id);
+      if (sortBy === 'due') return (deckStats[b.id]?.due || 0) - (deckStats[a.id]?.due || 0);
       return 0;
     });
 
-  $: totalDueCards = $cards.filter(c => c.nextReview <= Date.now()).length;
+  $: totalDueCards = Object.values(deckStats)
+    .reduce((total, stats) => total + stats.due, 0);
 
   function handleAddDeck() {
     if (newDeckName.trim()) {
@@ -49,14 +53,6 @@
     isAddCardModalOpen = true;
   }
 
-  function getDueCount(deckId) {
-    const now = Date.now();
-    return $cards.filter(c => c.deckId === deckId && c.nextReview <= now).length;
-  }
-
-  function getTotalCount(deckId) {
-    return $cards.filter(c => c.deckId === deckId).length;
-  }
   export let showInstallButton = false;
 </script>
 
@@ -182,8 +178,8 @@
         >
           <DeckCard 
             {deck} 
-            totalCount={getTotalCount(deck.id)}
-            dueCount={getDueCount(deck.id)}
+            totalCount={deckStats[deck.id]?.total || 0}
+            dueCount={deckStats[deck.id]?.due || 0}
             on:addCard={(e) => openAddCard(e.detail)}
             on:delete={(e) => { if(confirm('Hapus deck ini beserta semua isinya?')) deleteDeck(e.detail); }}
           />

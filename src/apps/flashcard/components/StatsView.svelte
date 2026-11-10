@@ -26,8 +26,8 @@
       const deck = $decks.find(d => d.id === c.deckId);
       return {
         deck: deck ? deck.name : 'Unknown',
-        front: c.front,
-        back: c.back,
+        depan: c.front,
+        belakang: c.back,
         interval: c.interval,
         easeFactor: c.easeFactor.toFixed(2),
         nextReview: new Date(c.nextReview).toLocaleDateString()

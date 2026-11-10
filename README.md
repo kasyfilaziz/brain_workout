@@ -31,6 +31,7 @@ This platform hosts several "workout" modules designed to improve various cognit
 - **Study Streaks**: Tracks consecutive days of learning to build long-term habits.
 - **Import & Export**: Support for CSV and JSON formats to backup or migrate your data.
 - **Quick Study**: Practice due cards from all decks simultaneously.
+- **Keyboard Shortcuts**: Press `Space` to flip the card and `1`-`5` to submit a rating.
 
 ---
 
@@ -67,9 +68,16 @@ npm run dev
 # Build for production
 npm run build
 
+# Run flashcard regression tests
+npm test
+
 # Preview production build
 npm run preview
 ```
+
+The test command uses Node's built-in test runner. It covers SM-2 scheduling,
+stable study queues, backup normalization, and CSV parsing without requiring a
+browser test framework.
 
 ---
 
@@ -106,6 +114,8 @@ assets, navigation, or service-worker updates after deployment.
     /utils             # Shared utilities (DB, SM-2, Haptics)
   App.svelte           # Root App Container (Modular Loader)
   main.js              # Platform Entry Point
+/tests
+  /flashcard           # Flashcard regression tests
 /public                # PWA icons and static assets
 /specs                 # Feature specifications and implementation plans
 ```
@@ -132,6 +142,14 @@ After Review:
 **Ratings (1-5):**
 - 1-2: Failed to remember → Reset interval.
 - 3-5: Successfully remembered → Increase interval based on Ease Factor.
+
+Failed cards keep the existing policy: their interval resets to `0`, and their
+next review is scheduled for 04:00 on the current or next applicable day.
+
+JSON backup import is additive and preserves each card's `interval`,
+`easeFactor`, and `nextReview` values. CSV import accepts quoted fields,
+embedded commas, escaped quotes, and multiline values when the file includes
+the `deck`, `depan`, and `belakang` headers.
 
 ---
 

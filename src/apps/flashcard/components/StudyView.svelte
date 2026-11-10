@@ -1,9 +1,12 @@
 <script>
-  import { cards, updateCard, loadCards } from '../stores/flashcards';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { cards, updateCard } from '../stores/flashcards';
   import { calculateSM2 } from '../../../lib/utils/sm2';
   import { settings } from '../../../lib/stores/settings';
+  import { getStudyKeyboardAction } from '../utils/keyboard';
+  import { saveRatingAndAdvance } from '../utils/studyRating';
+  import { buildStudyQueue } from '../utils/studyQueue';
   import FlashCard from './FlashCard.svelte';
-  import { createEventDispatcher } from 'svelte';
 
   export let deckId;
   export let isQuickStudy = false;
@@ -14,18 +17,20 @@
   let isFlipped = false;
   let sessionFinished = false;
   let isTransitioning = false;
+  let sessionInitialized = false;
+  let persistenceError = '';
 
-  $: {
-    const now = Date.now();
-    if (isQuickStudy) {
-      sessionCards = $cards.filter(c => c.nextReview <= now);
-    } else {
-      sessionCards = $cards.filter(c => c.deckId === deckId && c.nextReview <= now);
-    }
+  $: if (!sessionInitialized) {
+    sessionCards = buildStudyQueue($cards, {
+      deckId,
+      isQuickStudy,
+      now: Date.now()
+    });
+    sessionInitialized = true;
   }
 
-  function handleRating(rating) {
-    if (isTransitioning) return;
+  async function handleRating(rating) {
+    if (isTransitioning || !isFlipped || sessionFinished) return;
 
     if (typeof window !== 'undefined' && window.navigator.vibrate) {
       if (rating < 3) {
@@ -36,31 +41,85 @@
     }
 
     isTransitioning = true;
+    persistenceError = '';
 
     const currentCard = sessionCards[currentIndex];
     const updatedCard = calculateSM2(currentCard, rating);
-    updateCard(updatedCard);
+    let result;
 
-    // Flip back the card first
-    isFlipped = false;
-
-    // Wait for flip animation to finish (1000ms = 1 detik)
-    // Only then change to the next card
-    setTimeout(() => {
-      if (currentIndex < sessionCards.length - 1) {
-        currentIndex++;
-      } else {
-        sessionFinished = true;
-        // Update streak when session completes
-        settings.updateStudiedToday();
-      }
+    try {
+      result = await saveRatingAndAdvance({
+        updatedCard,
+        currentIndex,
+        totalCards: sessionCards.length,
+        saveCard: updateCard,
+        saveStreak: settings.updateStudiedToday,
+        wait: () => new Promise((resolve) => setTimeout(resolve, 1000))
+      });
+    } catch (error) {
+      console.error('Failed to save flashcard rating:', error);
+      persistenceError = 'Rating belum tersimpan. Periksa penyimpanan perangkat lalu coba lagi.';
       isTransitioning = false;
-    }, 1000);
+      return;
+    }
+
+    isFlipped = false;
+    currentIndex = result.nextIndex;
+
+    if (result.finished) {
+      if (result.streakError) {
+        console.error('Failed to save study streak:', result.streakError);
+        persistenceError = 'Kartu tersimpan, tetapi streak belajar gagal diperbarui.';
+      }
+      sessionFinished = true;
+    }
+
+    isTransitioning = false;
   }
 
   function finish() {
     dispatch('finish');
   }
+
+  function isTypingTarget(target) {
+    return target instanceof HTMLElement && (
+      target.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+    );
+  }
+
+  function handleKeydown(event) {
+    const action = getStudyKeyboardAction({
+      key: event.key,
+      code: event.code,
+      repeat: event.repeat,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      altKey: event.altKey,
+      isTypingTarget: isTypingTarget(event.target),
+      isFlipped,
+      isTransitioning,
+      sessionFinished,
+      hasCards: sessionCards.length > 0
+    });
+
+    if (!action) return;
+
+    if (action.preventDefault) {
+      event.preventDefault();
+    }
+
+    if (action.type === 'flip') {
+      isFlipped = !isFlipped;
+    } else if (action.type === 'rate') {
+      handleRating(action.rating);
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  });
 </script>
 
 <div class="h-full flex flex-col space-y-6 max-w-sm mx-auto">
@@ -91,8 +150,17 @@
       </div>
       <div>
         <h3 class="text-2xl font-black mb-2">Mantap!</h3>
-        <p class="text-gray-500 dark:text-gray-400 text-sm max-w-[250px]">Semua kartu di deck ini sudah kamu pelajari untuk hari ini.</p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm max-w-[250px]">
+          {isQuickStudy
+            ? 'Semua kartu yang jatuh tempo sudah kamu pelajari untuk hari ini.'
+            : 'Semua kartu di deck ini sudah kamu pelajari untuk hari ini.'}
+        </p>
       </div>
+      {#if persistenceError}
+        <p class="text-xs font-bold text-amber-600 dark:text-amber-400 max-w-[280px]" role="alert">
+          {persistenceError}
+        </p>
+      {/if}
       <button on:click={finish} class="w-full bg-blue-600 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-blue-500/30 active:scale-95 transition-all">
         Kembali ke Dashboard
       </button>
@@ -105,6 +173,11 @@
         </div>
       </div>
     {:else}
+      {#if persistenceError}
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-center text-xs font-bold text-red-600 dark:border-red-900/40 dark:bg-red-900/10 dark:text-red-400" role="alert">
+          {persistenceError}
+        </div>
+      {/if}
       <div class="flex-1 flex flex-col items-center justify-center py-4">
         <FlashCard card={sessionCards[currentIndex]} bind:isFlipped />
       </div>
@@ -124,11 +197,20 @@
         {/each}
       </div>
       {#if !isTransitioning}
-        <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest animate-fade-in pb-4">Seberapa hafal kamu?</p>
+        <div class="text-center animate-fade-in pb-4 space-y-1">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Seberapa hafal kamu?</p>
+          <p class="text-[10px] text-gray-400 dark:text-gray-500">
+            Tekan <kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[9px] font-bold dark:border-gray-700 dark:bg-gray-800">Space</kbd>
+            untuk balik kartu, lalu <kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[9px] font-bold dark:border-gray-700 dark:bg-gray-800">1-5</kbd>
+            untuk memberi rating
+          </p>
+        </div>
       {/if}
     {:else}
       <div class="text-center pb-20">
-        <p class="text-gray-400 text-sm font-medium animate-pulse">Klik kartu untuk melihat jawaban</p>
+        <p class="text-gray-400 text-sm font-medium animate-pulse">
+          Klik kartu atau tekan <kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px] font-bold dark:border-gray-700 dark:bg-gray-800">Space</kbd> untuk melihat jawaban
+        </p>
       </div>
     {/if}
   {:else}
